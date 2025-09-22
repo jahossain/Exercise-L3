@@ -4,8 +4,8 @@ Serial Monitor Check
 Uploaded a minimal sketch to test serial output.
 At 115200 baud, output shows:
 
-https://github.com/jahossain/Exercise-L3/blob/main/Screenshot%202025-09-22%20202407.png
 
+![image](https://github.com/jahossain/Exercise-L3/blob/main/Screenshot%202025-09-22%20202407.png)
 
 
 
