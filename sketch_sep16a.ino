@@ -1,46 +1,56 @@
+// ESP32-S3 FreeRTOS demo: LED + Serial + Compute
+// Board: ESP32-S3-DevKitC-1 v1.1  
+// Baud: 115200
+// Library required: Adafruit NeoPixel
+
 #include <Arduino.h>
 #include <Adafruit_NeoPixel.h>
 
-// ===== Onboard RGB LED (ESP32-S3-DevKitC-1 v1.1) =====
-#define LED_PIN    38
-#define NUM_LEDS   1
+
+#define LED_PIN     38      // ESP32-S3-DevKitC-1 onboard RGB data pin
+#define NUM_LEDS    1
+#define LED_BRIGHT  120     // 0..255
+
 Adafruit_NeoPixel strip(NUM_LEDS, LED_PIN, NEO_GRB + NEO_KHZ800);
 
-// Optional: task handles for future diagnostics
+
 TaskHandle_t hLED = nullptr, hSER = nullptr, hCPU = nullptr;
 
-// ---------- Task: LED (highest priority) ----------
+
 void TaskLED(void *pv) {
+  (void)pv;
   TickType_t last = xTaskGetTickCount();
-  const TickType_t period = pdMS_TO_TICKS(400);   // 400 ms period
+  const TickType_t period = pdMS_TO_TICKS(400);  // 400 ms
+  const TickType_t onTime = pdMS_TO_TICKS(150);  // LED ON window
 
   uint32_t colors[] = {
-    Adafruit_NeoPixel::Color(255, 0, 0),  // Red
-    Adafruit_NeoPixel::Color(0, 255, 0),  // Green
-    Adafruit_NeoPixel::Color(0, 0, 255),  // Blue
+    Adafruit_NeoPixel::Color(255, 0, 0),   // Red
+    Adafruit_NeoPixel::Color(0, 255, 0),   // Green
+    Adafruit_NeoPixel::Color(0, 0, 255),   // Blue
     0                                      // Off
   };
   int i = 0;
 
   for (;;) {
-    // LED ON for 150 ms
+    // ON
     strip.setPixelColor(0, colors[i]);
     strip.show();
-    vTaskDelay(pdMS_TO_TICKS(150));
+    vTaskDelay(onTime);
 
-    // LED OFF until the next period boundary (fixed-rate schedule)
+    // OFF until next fixed period boundary
     strip.setPixelColor(0, 0);
     strip.show();
     vTaskDelayUntil(&last, period);
 
-    i = (i + 1) % 4; // R -> G -> B -> Off
+    i = (i + 1) % 4;  // R -> G -> B -> Off
   }
 }
 
-// ---------- Task: Serial (medium priority) ----------
+
 void TaskSerial(void *pv) {
+  (void)pv;
   TickType_t last = xTaskGetTickCount();
-  const TickType_t period = pdMS_TO_TICKS(1000);  // 1 s
+  const TickType_t period = pdMS_TO_TICKS(1000); // 1 s
 
   for (;;) {
     size_t freeHeap = xPortGetFreeHeapSize();
@@ -51,14 +61,15 @@ void TaskSerial(void *pv) {
   }
 }
 
-// ---------- Task: Compute (lowest priority) ----------
+
 void TaskCompute(void *pv) {
+  (void)pv;
   TickType_t last = xTaskGetTickCount();
-  const TickType_t period = pdMS_TO_TICKS(200);   // 200 ms
+  const TickType_t period = pdMS_TO_TICKS(200);  // 200 ms
   volatile uint32_t sink = 0;
 
   for (;;) {
-    // Light CPU load: simple arithmetic loop
+    // Light CPU load
     for (int k = 0; k < 50000; ++k) {
       sink += (k ^ ((k << 1) + (k >> 1)));
     }
@@ -69,20 +80,21 @@ void TaskCompute(void *pv) {
 void setup() {
   Serial.begin(115200);
   delay(200);
-  Serial.println("\nESP32-S3 FreeRTOS demo (LED + Serial + Compute)");
+  Serial.println();
+  Serial.println("ESP32-S3 FreeRTOS demo (LED + Serial + Compute)");
 
-  // Init onboard RGB LED
+  
   strip.begin();
-  strip.setBrightness(120);  // 0..255
+  strip.setBrightness(LED_BRIGHT);
   strip.clear();
   strip.show();
 
-  // Create tasks (bigger number = higher priority)
+ 
   xTaskCreate(TaskLED,    "TaskLED",    2048, NULL, 3, &hLED);
   xTaskCreate(TaskSerial, "TaskSerial", 3072, NULL, 2, &hSER);
   xTaskCreate(TaskCompute,"TaskCompute",2048, NULL, 1, &hCPU);
 }
 
 void loop() {
-  // Not used: FreeRTOS scheduler runs our tasks
+ 
 }
