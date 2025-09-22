@@ -26,3 +26,4 @@ If ON time gets close to the period, the LED stays ON almost continuously, and t
 
 Lab photo:
 
+https://github.com/jahossain/Exercise-L3/blob/main/WhatsApp%20Image%202025-09-22%20at%2020.36.15_d8a957bc.jpg
