@@ -22,3 +22,7 @@ TaskLED with period = 200 ms, ON time = 150 ms:
 Duty cycle = 150/200 = 75%.
 If ON time gets close to the period, the LED stays ON almost continuously, and timing margins for OFF shrink, causing the blink pattern to blur.
 ![image](https://github.com/jahossain/Exercise-L3/blob/main/Screenshot%202025-09-22%20201805.png)
+
+
+Lab photo:
+
